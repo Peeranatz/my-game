@@ -1,8 +1,138 @@
 from kivy.app import App
-from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.uix.image import Image
+from kivy.uix.label import Label
+from kivy.uix.floatlayout import FloatLayout
+from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
+
+
+class SelectPlayerScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.layout = FloatLayout()
+
+        # Bind window size to update positions
+        Window.bind(size=self.on_window_resize)
+
+        # Background
+        self.background = Image(
+            source="selec_player_bk.jpg",
+            size_hint=(1, 1),
+            allow_stretch=True,
+            keep_ratio=False,
+        )
+        self.layout.add_widget(self.background)
+
+        # Title
+        self.title = Label(
+            text="Select Your Player", font_size="48sp", size_hint=(None, None)
+        )
+        self.layout.add_widget(self.title)
+
+        # Player data setup
+        self.player_data = {
+            0: {
+                "image": "Ronaldo-re.png",
+                "name": "Ronaldo",
+                "preview": "ronaldo-re.png",
+            },
+            1: {"image": "Messi-re.png", "name": "Messi", "preview": "messi-re.png"},
+            2: {"image": "Mbape-re.png", "name": "Mbappe", "preview": "Mbape-re.png"},
+            3: {
+                "image": "Haaland-re.png",
+                "name": "Haaland",
+                "preview": "haaland-re.png",
+            },
+            4: {"image": "Bruno-re.png", "name": "Bruno", "preview": "bruno-re.png"},
+            5: {"image": "Son-re.png", "name": "Son", "preview": "son-re.png"},
+            6: {"image": "Salah-re.png", "name": "Salah", "preview": "salah-re.png"},
+        }
+
+        # Create containers for dynamic elements
+        self.player_cards = []
+        self.create_player_cards()
+
+        self.add_widget(self.layout)
+
+        # Initial update of positions
+        self.on_window_resize(Window, Window.size)
+
+    def create_player_cards(self):
+        for i in range(7):
+            card_container = FloatLayout(size_hint=(None, None))
+
+            # Player preview image
+            player_image = Image(
+                source=self.player_data[i]["preview"], size_hint=(None, None)
+            )
+
+            # Player name label
+            name_label = Label(
+                text=self.player_data[i]["name"],
+                font_size="16sp",
+                size_hint=(None, None),
+            )
+
+            # Selection button
+            select_button = Button(text="Select", size_hint=(None, None))
+            select_button.bind(on_release=lambda btn, i=i: self.select_player(i))
+
+            card_container.add_widget(player_image)
+            card_container.add_widget(name_label)
+            card_container.add_widget(select_button)
+
+            self.player_cards.append(
+                {
+                    "container": card_container,
+                    "image": player_image,
+                    "label": name_label,
+                    "button": select_button,
+                }
+            )
+            self.layout.add_widget(card_container)
+
+    def on_window_resize(self, instance, size):
+        width, height = size
+
+        # Update title position
+        self.title.pos = (width * 0.5 - self.title.width * 0.5, height * 0.85)
+
+        # Calculate card dimensions and spacing
+        card_width = width * 0.12
+        card_height = height * 0.3
+        card_spacing = width * 0.02
+
+        # Calculate starting position to center all cards
+        total_width = (card_width + card_spacing) * 7 - card_spacing
+        start_x = (width - total_width) / 2
+
+        # Update each player card
+        for i, card in enumerate(self.player_cards):
+            # Container position
+            x_pos = start_x + (card_width + card_spacing) * i
+            y_pos = height * 0.3
+            card["container"].size = (card_width, card_height)
+            card["container"].pos = (x_pos, y_pos)
+
+            # Image position and size
+            card["image"].size = (card_width, card_width)
+            card["image"].pos = (x_pos, y_pos + card_height * 0.3)
+
+            # Label position
+            card["label"].size = (card_width, card_height * 0.2)
+            card["label"].pos = (x_pos, y_pos + card_height * 0.2)
+
+            # Button position and size
+            card["button"].size = (card_width, card_height * 0.15)
+            card["button"].pos = (x_pos, y_pos)
+
+    def select_player(self, player_index):
+        # Go to game screen or start game with the selected player
+        print(f"Player {self.player_data[player_index]['name']} selected")
+        # Add your game start logic here, e.g., set the player's image and start the game
+        self.manager.current = "game"
 
 
 class MainMenu(Screen):
@@ -20,12 +150,21 @@ class MainMenu(Screen):
         )
         layout.add_widget(self.background)
 
+        # Title
+        title = Label(
+            text="Foot Bounce Game",
+            font_size="48sp",
+            size_hint=(None, None),
+            pos=(Window.width / 2 - 200, Window.height * 0.7),
+        )
+        layout.add_widget(title)
+
         # Start Button
         start_button = Button(
-            text="Play",
+            text="Start Game",
             size_hint=(None, None),
             size=(200, 50),
-            pos_hint={"center_x": 0.5, "center_y": 0.5},
+            pos=(Window.width / 2 - 100, Window.height / 2 - 25),
         )
         start_button.bind(on_release=self.start_game)
         layout.add_widget(start_button)
@@ -33,25 +172,7 @@ class MainMenu(Screen):
         self.add_widget(layout)
 
     def start_game(self, instance):
-        # Change to the SelectPlayerScreen
         self.manager.current = "select_player"
-
-
-class SelectPlayerScreen(Screen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        layout = FloatLayout()
-
-        # Background for the player selection screen
-        self.background = Image(
-            source="selec_player_bk.jpg",
-            size_hint=(1, 1),
-            allow_stretch=True,
-            keep_ratio=False,
-        )
-        layout.add_widget(self.background)
-
-        self.add_widget(layout)
 
 
 class SoccerJuggleApp(App):

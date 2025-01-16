@@ -33,13 +33,32 @@ class MainMenu(Screen):
         self.add_widget(layout)
 
     def start_game(self, instance):
-        print("Game started")
+        # Change to the SelectPlayerScreen
+        self.manager.current = "select_player"
+
+
+class SelectPlayerScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        layout = FloatLayout()
+
+        # Background for the player selection screen
+        self.background = Image(
+            source="selec_player_bk.jpg",
+            size_hint=(1, 1),
+            allow_stretch=True,
+            keep_ratio=False,
+        )
+        layout.add_widget(self.background)
+
+        self.add_widget(layout)
 
 
 class SoccerJuggleApp(App):
     def build(self):
         sm = ScreenManager()
         sm.add_widget(MainMenu(name="menu"))
+        sm.add_widget(SelectPlayerScreen(name="select_player"))
         return sm
 
 

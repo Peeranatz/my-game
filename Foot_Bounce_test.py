@@ -388,11 +388,11 @@ class GameScreen(Screen):
         self.layout.add_widget(self.score_label)
 
         # Add ball image
-        self.ball_image = Image(source="football.png", size_hint=(None, None))
+        self.ball_image = Image(source="footballz.png", size_hint=(None, None))
         self.layout.add_widget(self.ball_image)
 
         # Add shoe image
-        self.shoe_image = Image(source="shoe.png", size_hint=(None, None))
+        self.shoe_image = Image(source="stusz.png", size_hint=(None, None))
         self.layout.add_widget(self.shoe_image)
 
         self.add_widget(self.layout)

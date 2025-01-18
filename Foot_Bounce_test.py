@@ -135,6 +135,23 @@ class SelectPlayerScreen(Screen):
         self.manager.current = "game"
 
 
+class GameScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.layout = FloatLayout()
+
+        # Background
+        self.background = Image(
+            source="bk_stadium.jpg",
+            size_hint=(1, 1),
+            allow_stretch=True,
+            keep_ratio=False,
+        )
+        self.layout.add_widget(self.background)
+
+        self.add_widget(self.layout)
+
+
 class MainMenu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -180,6 +197,7 @@ class SoccerJuggleApp(App):
         sm = ScreenManager()
         sm.add_widget(MainMenu(name="menu"))
         sm.add_widget(SelectPlayerScreen(name="select_player"))
+        sm.add_widget(GameScreen(name="game"))
         return sm
 
 

@@ -166,7 +166,7 @@ class GameScreen(Screen):
         # Set player image and position it
         self.player_image.source = player_data["image"]
         self.player_image.size = (200, 200)
-        self.player_image.pos = (Window.width / 2 - 100, Window.height * 0.6)
+        self.player_image.pos = (Window.width / 10 - 100, Window.height * 0.7)
 
         # Position score label
         self.score_label.pos = (Window.width * 0.05, Window.height * 0.9)

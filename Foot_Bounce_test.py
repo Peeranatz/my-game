@@ -204,9 +204,38 @@ class GameScreen(Screen):
         self.ball_position[1] += self.ball_speed * dt
         self.ball_image.pos = tuple(self.ball_position)
 
+        # Check collision with the shoe
+        if self.check_collision():
+            self.ball_speed = abs(
+                self.ball_speed
+            )  # Reverse direction to make the ball go up
+            self.ball_position[1] = (
+                self.shoe_position[1] + self.shoe_image.height
+            )  # Adjust position to avoid overlap
+
         # Check if the ball hits the bottom
         if self.ball_position[1] <= 0:
             self.ball_position[1] = Window.height  # Reset ball position to the top
+
+    def check_collision(self):
+        # Check if ball and shoe collide
+        ball_bottom = self.ball_position[1]
+        ball_top = self.ball_position[1] + self.ball_image.height
+        ball_left = self.ball_position[0]
+        ball_right = self.ball_position[0] + self.ball_image.width
+
+        shoe_top = self.shoe_position[1] + self.shoe_image.height
+        shoe_bottom = self.shoe_position[1]
+        shoe_left = self.shoe_position[0]
+        shoe_right = self.shoe_position[0] + self.shoe_image.width
+
+        # Collision logic
+        return (
+            ball_bottom <= shoe_top
+            and ball_top >= shoe_bottom
+            and ball_right >= shoe_left
+            and ball_left <= shoe_right
+        )
 
     def on_touch_move(self, touch):
         # Update shoe position based on touch movement

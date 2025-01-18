@@ -175,6 +175,9 @@ class GameScreen(Screen):
         self.ball_speed = -200  # Pixels per second (negative for falling down)
         self.ball_position = [Window.width / 2 - 50, Window.height]
 
+        # Initialize shoe position
+        self.shoe_position = [Window.width / 2 - 75, Window.height * 0.1]
+
         # Schedule update function
         Clock.schedule_interval(self.update, 1 / 60.0)  # 60 FPS
 
@@ -194,7 +197,7 @@ class GameScreen(Screen):
 
         # Position shoe image
         self.shoe_image.size = (150, 100)
-        self.shoe_image.pos = (Window.width / 2 - 75, Window.height * 0.1)
+        self.shoe_image.pos = tuple(self.shoe_position)
 
     def update(self, dt):
         # Update ball position
@@ -204,6 +207,17 @@ class GameScreen(Screen):
         # Check if the ball hits the bottom
         if self.ball_position[1] <= 0:
             self.ball_position[1] = Window.height  # Reset ball position to the top
+
+    def on_touch_move(self, touch):
+        # Update shoe position based on touch movement
+        self.shoe_position[0] = touch.x - self.shoe_image.width / 2
+
+        # Ensure the shoe stays within screen bounds
+        self.shoe_position[0] = max(
+            0, min(self.shoe_position[0], Window.width - self.shoe_image.width)
+        )
+        # Update shoe image position
+        self.shoe_image.pos = tuple(self.shoe_position)
 
 
 class MainMenu(Screen):

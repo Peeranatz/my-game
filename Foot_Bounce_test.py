@@ -133,6 +133,7 @@ class SelectPlayerScreen(Screen):
         print(f"Player {self.player_data[player_index]['name']} selected")
         # Add your game start logic here, e.g., set the player's image and start the game
         self.manager.current = "game"
+        self.manager.get_screen("game").set_player(self.player_data[player_index])
 
 
 class GameScreen(Screen):
@@ -149,7 +150,26 @@ class GameScreen(Screen):
         )
         self.layout.add_widget(self.background)
 
+        # Player image placeholder
+        self.player_image = Image(size_hint=(None, None))
+        self.layout.add_widget(self.player_image)
+
+        # Score label
+        self.score_label = Label(
+            text="Score: 0", font_size="32sp", size_hint=(None, None)
+        )
+        self.layout.add_widget(self.score_label)
+
         self.add_widget(self.layout)
+
+    def set_player(self, player_data):
+        # Set player image and position it
+        self.player_image.source = player_data["image"]
+        self.player_image.size = (200, 200)
+        self.player_image.pos = (Window.width / 2 - 100, Window.height * 0.6)
+
+        # Position score label
+        self.score_label.pos = (Window.width * 0.05, Window.height * 0.9)
 
 
 class MainMenu(Screen):

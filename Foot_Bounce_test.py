@@ -130,9 +130,7 @@ class SelectPlayerScreen(Screen):
             card["button"].pos = (x_pos, y_pos)
 
     def select_player(self, player_index):
-        # Go to game screen or start game with the selected player
         print(f"Player {self.player_data[player_index]['name']} selected")
-        # Add your game start logic here, e.g., set the player's image and start the game
         self.manager.current = "game"
         self.manager.get_screen("game").set_player(self.player_data[player_index])
 
@@ -171,54 +169,75 @@ class GameScreen(Screen):
 
         self.add_widget(self.layout)
 
-        # Initialize ball speed and position
-        self.ball_speed = -200  # Pixels per second (negative for falling down)
+        # Physics attributes
+        self.gravity = -600  # Gravity pulling the ball down (pixels/sec^2)
+        self.ball_speed = [0, -200]  # [Horizontal speed, Vertical speed]
         self.ball_position = [Window.width / 2 - 50, Window.height]
 
-        # Initialize shoe position
+        # Shoe position
         self.shoe_position = [Window.width / 2 - 75, Window.height * 0.1]
+
+        # Score
+        self.score = 0
 
         # Schedule update function
         Clock.schedule_interval(self.update, 1 / 60.0)  # 60 FPS
 
     def set_player(self, player_data):
-        # Set player image and position it
         self.player_image.source = player_data["image"]
         self.player_image.size = (200, 200)
         self.player_image.pos = (Window.width / 10 - 100, Window.height * 0.7)
 
-        # Position score label
         self.score_label.pos = (Window.width * 0.05, Window.height * 0.9)
 
-        # Position ball image
         self.ball_image.size = (100, 100)
         self.ball_position = [Window.width / 2 - 50, Window.height]
         self.ball_image.pos = tuple(self.ball_position)
 
-        # Position shoe image
         self.shoe_image.size = (150, 100)
         self.shoe_image.pos = tuple(self.shoe_position)
 
     def update(self, dt):
-        # Update ball position
-        self.ball_position[1] += self.ball_speed * dt
+        # Update ball's speed with gravity
+        self.ball_speed[1] += self.gravity * dt
+
+        # Update ball's position
+        self.ball_position[0] += self.ball_speed[0] * dt
+        self.ball_position[1] += self.ball_speed[1] * dt
+
+        # Apply horizontal drag to slow down the ball
+        self.ball_speed[0] *= 0.99
+
+        # Update ball image position
         self.ball_image.pos = tuple(self.ball_position)
 
         # Check collision with the shoe
         if self.check_collision():
-            self.ball_speed = abs(
-                self.ball_speed
-            )  # Reverse direction to make the ball go up
-            self.ball_position[1] = (
-                self.shoe_position[1] + self.shoe_image.height
-            )  # Adjust position to avoid overlap
+            self.ball_speed[1] = abs(self.ball_speed[1]) * 0.8
+            collision_offset = self.ball_position[0] - self.shoe_position[0]
+            self.ball_speed[0] += collision_offset * 0.1
+            self.score += 1
 
-        # Check if the ball hits the bottom
+            # Update the score label
+            self.score_label.text = f"Score: {self.score}"
+
+        # Check if the ball hits the sides of the screen
+        if (
+            self.ball_position[0] <= 0
+            or self.ball_position[0] + self.ball_image.width >= Window.width
+        ):
+            self.ball_speed[0] *= -1  # Reverse horizontal direction
+
+        # Check if the ball hits the bottom of the screen
         if self.ball_position[1] <= 0:
-            self.ball_position[1] = Window.height  # Reset ball position to the top
+            self.reset_ball()  # Reset ball position and speed
+
+        # Check if the ball hits the top of the screen
+        if self.ball_position[1] + self.ball_image.height >= Window.height:
+            self.ball_speed[1] *= -1  # Reverse vertical direction
 
     def check_collision(self):
-        # Check if ball and shoe collide
+        # Check if the ball and shoe collide
         ball_bottom = self.ball_position[1]
         ball_top = self.ball_position[1] + self.ball_image.height
         ball_left = self.ball_position[0]
@@ -229,13 +248,19 @@ class GameScreen(Screen):
         shoe_left = self.shoe_position[0]
         shoe_right = self.shoe_position[0] + self.shoe_image.width
 
-        # Collision logic
         return (
             ball_bottom <= shoe_top
             and ball_top >= shoe_bottom
             and ball_right >= shoe_left
             and ball_left <= shoe_right
         )
+
+    def reset_ball(self):
+        # Reset ball position and speed
+        self.ball_position = [Window.width / 2 - 50, Window.height]
+        self.ball_speed = [0, -200]
+        self.score = 0  # Reset the score
+        self.score_label.text = f"Score: {self.score}"
 
     def on_touch_move(self, touch):
         # Update shoe position based on touch movement

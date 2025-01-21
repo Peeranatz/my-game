@@ -1,3 +1,4 @@
+# ------------ Imports ------------
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
@@ -11,206 +12,61 @@ from kivy.core.audio import SoundLoader
 from random import randint
 
 
-class SoccerJuggleGame(Screen):
+# ------------ Main Menu Screen ------------
+class MainMenu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.game_state = None
-        self.selected_player = None
-        self.score = 0
-        self.high_score = 0
 
-        # Bind window size to update positions
-        Window.bind(size=self.on_window_resize)
-
-        # Load sounds
-        self.hit_sound = SoundLoader.load("sound_bounce.mp3")
-        self.game_over_sound = SoundLoader.load("gameOver.mp3")
-
-        # Create layout
-        self.layout = FloatLayout()
+        layout = FloatLayout()
 
         # Background
         self.background = Image(
-            source="bk_stadium.jpg",
+            source="main_bk_football.jpg",
             size_hint=(1, 1),
             allow_stretch=True,
             keep_ratio=False,
         )
-        self.layout.add_widget(self.background)
+        layout.add_widget(self.background)
 
-        # Ball properties (size relative to window height)
-        self.ball = Image(source="footballz.png", size_hint=(None, None))
-        self.layout.add_widget(self.ball)
-
-        # Shoe properties (size relative to window width)
-        self.shoe = Image(source="stusz.png", size_hint=(None, None))
-        self.layout.add_widget(self.shoe)
-
-        # Hitbox for the shoe
-        self.shoe_hitbox = Widget(size_hint=(None, None))
-        self.layout.add_widget(self.shoe_hitbox)
-
-        # Player image
-        self.player_image = Image(size_hint=(None, None))
-        self.layout.add_widget(self.player_image)
-
-        # Score label
-        self.score_label = Label(
-            text=f"Score: {self.score}",
-            font_size="30sp",
-            color=(1, 1, 1, 1),
+        # Title
+        title = Label(
+            text="Foot Bounce Game",
+            font_size="48sp",
             size_hint=(None, None),
-            pos_hint={"center_x": 0.08, "center_y": 0.8},
+            pos=(Window.width / 2 - 200, Window.height * 0.7),
         )
-        self.layout.add_widget(self.score_label)
+        layout.add_widget(title)
 
-        # Restart button
-        self.restart_button = Button(text="Restart", size_hint=(None, None))
-        self.restart_button.bind(on_release=self.show_game_over)
-        self.restart_button.opacity = 0
-        self.restart_button.disabled = True
-        self.layout.add_widget(self.restart_button)
-
-        self.add_widget(self.layout)
-
-        # Initial update of positions
-        self.on_window_resize(Window, Window.size)
-
-        # Game loop
-        Clock.schedule_interval(self.update, 1 / 60.0)
-
-    def start_game(self, player_image_path):
-        self.game_state = "WAITING"
-        self.score = 0
-        self.ball.pos = (
-            Window.width // 2 - self.ball.width // 2,
-            Window.height // 2 - self.ball.height // 2,
+        # Start Button
+        start_button = Button(
+            text="Start Game",
+            size_hint=(None, None),
+            size=(200, 50),
+            pos=(Window.width / 2 - 100, Window.height / 2 - 25),
         )
-        self.ball_speed_y = -5
-        self.ball_speed_x = randint(-3, 3) or 1
-        self.gravity = -0.2
-        self.player_image.source = player_image_path
-        self.update_score()
-        self.restart_button.opacity = 0
-        self.restart_button.disabled = True
+        start_button.bind(on_release=self.start_game)
+        layout.add_widget(start_button)
 
-    def start_playing(self):
-        self.game_state = "PLAYING"
-
-    def show_game_over(self, instance):
-        self.manager.get_screen("game_over").display_results(
-            self.score, self.high_score
+        # Exit Button
+        exit_button = Button(
+            text="Exit",
+            size_hint=(None, None),
+            size=(200, 50),
+            pos=(Window.width / 2 - 100, Window.height / 2 - 100),
         )
-        self.manager.current = "game_over"
+        exit_button.bind(on_release=self.exit_game)
+        layout.add_widget(exit_button)
 
-    def update(self, dt):
-        if self.game_state == "PLAYING":
-            self.ball.y += self.ball_speed_y
-            self.ball.x += self.ball_speed_x
-            self.ball_speed_y += self.gravity
+        self.add_widget(layout)
 
-            # Ball collision with shoe
-            if self.check_collision():
-                self.ball_speed_y = 8
-                self.ball_speed_x = randint(-3, 3)
-                self.score += 1
-                self.update_score()
+    def start_game(self, instance):
+        self.manager.current = "select_player"
 
-                # Play hit sound
-                if self.hit_sound:
-                    self.hit_sound.play()
-
-                # Increase difficulty
-                if self.score % 5 == 0:
-                    self.ball_speed_y -= 0.5
-                    self.gravity -= 0.05
-
-            # Ball falls off screen
-            if self.ball.y < 0:
-                self.game_state = "GAME_OVER"
-
-                # Update high score
-                if self.score > self.high_score:
-                    self.high_score = self.score
-
-                # Play game over sound
-                if self.game_over_sound:
-                    self.game_over_sound.play()
-
-                self.restart_button.opacity = 1
-                self.restart_button.disabled = False
-
-            # Ball bounces off walls
-            if self.ball.x <= 0 or self.ball.x + self.ball.width >= Window.width:
-                self.ball_speed_x *= -1
-
-    def check_collision(self):
-        ball_bottom = self.ball.y
-        ball_center_x = self.ball.x + self.ball.width / 2
-        return (
-            self.shoe_hitbox.x
-            < ball_center_x
-            < self.shoe_hitbox.x + self.shoe_hitbox.width
-            and self.shoe_hitbox.y
-            < ball_bottom
-            < self.shoe_hitbox.y + self.shoe_hitbox.height
-            and self.ball_speed_y < 0
-        )
-
-    def update_score(self):
-        self.score_label.text = f"Score: {self.score}"
-
-    def on_touch_down(self, touch):
-        if self.game_state == "WAITING":
-            self.start_playing()
-
-    def on_touch_move(self, touch):
-        if self.game_state == "PLAYING":
-            self.shoe.x = touch.x - self.shoe.width / 2
-            self.shoe_hitbox.x = touch.x - self.shoe_hitbox.width / 2
-
-    def on_window_resize(self, instance, size):
-        width, height = size
-
-        # Update ball size and position
-        ball_size = (width * 0.08, height * 0.08)
-        self.ball.size = ball_size
-        if self.game_state is None or self.game_state == "WAITING":
-            self.ball.pos = (
-                width // 2 - ball_size[0] // 2,
-                height // 2 - ball_size[1] // 2,
-            )
-
-        # Update shoe size and position
-        shoe_width = width * 0.25
-        shoe_height = height * 0.1
-        self.shoe.size = (shoe_width, shoe_height)
-        self.shoe.pos = (width // 2 - shoe_width // 2, height * 0.1)
-
-        # Update shoe hitbox
-        hitbox_width = shoe_width * 0.5
-        hitbox_height = shoe_height * 0.2
-        self.shoe_hitbox.size = (hitbox_width, hitbox_height)
-        self.shoe_hitbox.pos = (width // 2 - hitbox_width // 2, height * 0.12)
-
-        # Update player image size and position
-        player_size = (width * 0.1, height * 0.15)
-        self.player_image.size = player_size
-        self.player_image.pos = (width * 0.02, height * 0.8)
-
-        # Update score label position
-        self.score_label.pos = (width * 0.02, height * 0.95)
-
-        # Update restart button size and position
-        button_width = width * 0.2
-        button_height = height * 0.08
-        self.restart_button.size = (button_width, button_height)
-        self.restart_button.pos = (
-            width // 2 - button_width // 2,
-            height // 2 - button_height // 2,
-        )
+    def exit_game(self, instance):
+        App.get_running_app().stop()
 
 
+# ------------ Select Player Screen ------------
 class SelectPlayerScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -337,6 +193,227 @@ class SelectPlayerScreen(Screen):
         self.manager.current = "game"
 
 
+# ------------ Main Game Screen ------------
+class SoccerJuggleGame(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.game_state = None
+        self.selected_player = None
+        self.score = 0
+        self.high_score = 0
+
+        # Bind window size to update positions
+        Window.bind(size=self.on_window_resize)
+
+        # Load sounds
+        self.hit_sound = SoundLoader.load("sound_bounce.mp3")
+        self.game_over_sound = SoundLoader.load("gameOver.mp3")
+
+        # Create layout
+        self.layout = FloatLayout()
+
+        # Background
+        self.background = Image(
+            source="bk_stadium.jpg",
+            size_hint=(1, 1),
+            allow_stretch=True,
+            keep_ratio=False,
+        )
+        self.layout.add_widget(self.background)
+
+        # Ball properties
+        self.ball = Image(source="footballz.png", size_hint=(None, None))
+        self.layout.add_widget(self.ball)
+
+        # Shoe properties
+        self.shoe = Image(source="stusz.png", size_hint=(None, None))
+        self.layout.add_widget(self.shoe)
+
+        # Hitbox for the shoe
+        self.shoe_hitbox = Widget(size_hint=(None, None))
+        self.layout.add_widget(self.shoe_hitbox)
+
+        # Player image
+        self.player_image = Image(size_hint=(None, None))
+        self.layout.add_widget(self.player_image)
+
+        # Score label
+        self.score_label = Label(
+            text=f"Score: {self.score}",
+            font_size="30sp",
+            color=(1, 1, 1, 1),
+            size_hint=(None, None),
+            pos_hint={"center_x": 0.08, "center_y": 0.8},
+        )
+        self.layout.add_widget(self.score_label)
+
+        # Game Over label
+        self.game_over_label = Label(
+            text="Game Over",
+            font_size="72sp",
+            color=(1, 0, 0, 1),  # สีแดง
+            size_hint=(None, None),
+            pos_hint={"center_x": 0.5, "center_y": 0.6},
+            opacity=0,  # ซ่อนไว้ตอนเริ่มเกม
+        )
+        self.layout.add_widget(self.game_over_label)
+
+        # Restart button
+        self.restart_button = Button(text="Restart", size_hint=(None, None))
+        self.restart_button.bind(on_release=self.show_game_over)
+        self.restart_button.opacity = 0
+        self.restart_button.disabled = True
+        self.layout.add_widget(self.restart_button)
+
+        self.add_widget(self.layout)
+
+        # Initial update of positions
+        self.on_window_resize(Window, Window.size)
+
+        # Game loop
+        Clock.schedule_interval(self.update, 1 / 60.0)
+
+    def start_game(self, player_image_path):
+        self.game_state = "WAITING"
+        self.score = 0
+        self.ball.pos = (
+            Window.width // 2 - self.ball.width // 2,
+            Window.height // 2 - self.ball.height // 2,
+        )
+        self.ball_speed_y = -5
+        self.ball_speed_x = randint(-3, 3) or 1
+        self.gravity = -0.2
+        self.player_image.source = player_image_path
+        self.update_score()
+        self.restart_button.opacity = 0
+        self.restart_button.disabled = True
+        self.game_over_label.opacity = 0
+
+    def start_playing(self):
+        self.game_state = "PLAYING"
+
+    def show_game_over(self, instance):
+        self.manager.get_screen("game_over").display_results(
+            self.score, self.high_score
+        )
+        self.manager.current = "game_over"
+
+    def update(self, dt):
+        if self.game_state == "PLAYING":
+            self.ball.y += self.ball_speed_y
+            self.ball.x += self.ball_speed_x
+            self.ball_speed_y += self.gravity
+
+            # Ball collision with shoe
+            if self.check_collision():
+                self.ball_speed_y = 8
+                self.ball_speed_x = randint(-3, 3)
+                self.score += 1
+                self.update_score()
+
+                # Play hit sound
+                if self.hit_sound:
+                    self.hit_sound.play()
+
+                # Increase difficulty
+                if self.score % 5 == 0:
+                    self.ball_speed_y -= 0.5
+                    self.gravity -= 0.05
+
+            # Ball falls off screen
+            if self.ball.y < 0:
+                self.game_state = "GAME_OVER"
+
+                # Update high score
+                if self.score > self.high_score:
+                    self.high_score = self.score
+
+                # Play game over sound
+                if self.game_over_sound:
+                    self.game_over_sound.play()
+
+                # แสดง Game Over label
+                self.game_over_label.opacity = 1
+
+                self.restart_button.opacity = 1
+                self.restart_button.disabled = False
+
+            # Ball bounces off walls
+            if self.ball.x <= 0 or self.ball.x + self.ball.width >= Window.width:
+                self.ball_speed_x *= -1
+
+    def check_collision(self):
+        ball_bottom = self.ball.y
+        ball_center_x = self.ball.x + self.ball.width / 2
+        return (
+            self.shoe_hitbox.x
+            < ball_center_x
+            < self.shoe_hitbox.x + self.shoe_hitbox.width
+            and self.shoe_hitbox.y
+            < ball_bottom
+            < self.shoe_hitbox.y + self.shoe_hitbox.height
+            and self.ball_speed_y < 0
+        )
+
+    def update_score(self):
+        self.score_label.text = f"Score: {self.score}"
+
+    def on_touch_down(self, touch):
+        if self.game_state == "WAITING":
+            self.start_playing()
+
+    def on_touch_move(self, touch):
+        if self.game_state == "PLAYING":
+            self.shoe.x = touch.x - self.shoe.width / 2
+            self.shoe_hitbox.x = touch.x - self.shoe_hitbox.width / 2
+
+    def on_window_resize(self, instance, size):
+        width, height = size
+
+        # Update ball size and position
+        ball_size = (width * 0.08, height * 0.08)
+        self.ball.size = ball_size
+        if self.game_state is None or self.game_state == "WAITING":
+            self.ball.pos = (
+                width // 2 - ball_size[0] // 2,
+                height // 2 - ball_size[1] // 2,
+            )
+
+        # Update shoe size and position
+        shoe_width = width * 0.25
+        shoe_height = height * 0.1
+        self.shoe.size = (shoe_width, shoe_height)
+        self.shoe.pos = (width // 2 - shoe_width // 2, height * 0.1)
+
+        # Update shoe hitbox
+        hitbox_width = shoe_width * 0.5
+        hitbox_height = shoe_height * 0.2
+        self.shoe_hitbox.size = (hitbox_width, hitbox_height)
+        self.shoe_hitbox.pos = (width // 2 - hitbox_width // 2, height * 0.12)
+
+        # Update player image size and position
+        player_size = (width * 0.1, height * 0.15)
+        self.player_image.size = player_size
+        self.player_image.pos = (width * 0.02, height * 0.8)
+        # ต่อจาก on_window_resize ของ SoccerJuggleGame
+        player_size = (width * 0.1, height * 0.15)
+        self.player_image.size = player_size
+        self.player_image.pos = (width * 0.02, height * 0.8)
+
+        # Update score label position
+        self.score_label.pos = (width * 0.02, height * 0.95)
+
+        # Update restart button size and position
+        button_width = width * 0.2
+        button_height = height * 0.08
+        self.restart_button.size = (button_width, button_height)
+        self.restart_button.pos = (
+            width // 2 - button_width // 2,
+            height // 2 - button_height // 2,
+        )
+
+
+# ------------ Game Over Screen ------------
 class GameOverScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -381,59 +458,7 @@ class GameOverScreen(Screen):
         self.manager.current = "select_player"
 
 
-class MainMenu(Screen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        layout = FloatLayout()
-
-        # Background
-        self.background = Image(
-            source="main_bk_football.jpg",
-            size_hint=(1, 1),
-            allow_stretch=True,
-            keep_ratio=False,
-        )
-        layout.add_widget(self.background)
-
-        # Title
-        title = Label(
-            text="Foot Bounce Game",
-            font_size="48sp",
-            size_hint=(None, None),
-            pos=(Window.width / 2 - 200, Window.height * 0.7),
-        )
-        layout.add_widget(title)
-
-        # Start Button
-        start_button = Button(
-            text="Start Game",
-            size_hint=(None, None),
-            size=(200, 50),
-            pos=(Window.width / 2 - 100, Window.height / 2 - 25),
-        )
-        start_button.bind(on_release=self.start_game)
-        layout.add_widget(start_button)
-
-        # Exit Button
-        exit_button = Button(
-            text="Exit",
-            size_hint=(None, None),
-            size=(200, 50),
-            pos=(Window.width / 2 - 100, Window.height / 2 - 100),
-        )
-        exit_button.bind(on_release=self.exit_game)
-        layout.add_widget(exit_button)
-
-        self.add_widget(layout)
-
-    def start_game(self, instance):
-        self.manager.current = "select_player"
-
-    def exit_game(self, instance):
-        App.get_running_app().stop()
-
-
+# ------------ Main App Class ------------
 class SoccerJuggleApp(App):
     def build(self):
         sm = ScreenManager()
@@ -444,5 +469,6 @@ class SoccerJuggleApp(App):
         return sm
 
 
+# ------------ Main Entry Point ------------
 if __name__ == "__main__":
     SoccerJuggleApp().run()

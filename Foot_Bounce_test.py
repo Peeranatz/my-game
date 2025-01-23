@@ -197,6 +197,17 @@ class SelectPlayerScreen(Screen):
 class SoccerJuggleGame(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        # เพิ่ม attribute ใหม่สำหรับการเปลี่ยนลูกฟุตบอล
+        self.ball_images = [
+            "footballz.png",
+            "mudeng-re.png",  # เพิ่มรูปลูกฟุตบอลประเภทใหม่
+            "pigpig-re.png",  # เพิ่มรูปลูกฟุตบอลประเภทใหม่
+            "bowling-re.png",  # เพิ่มรูปลูกฟุตบอลประเภทใหม่
+            "footgold.png",  # เพิ่มรูปลูกฟุตบอลประเภทใหม่
+        ]
+        self.current_ball_image_index = 0
+
         self.game_state = None
         self.selected_player = None
         self.score = 0
@@ -258,6 +269,17 @@ class SoccerJuggleGame(Screen):
         )
         self.layout.add_widget(self.game_over_label)
 
+        # เพิ่ม Label สำหรับข้อความ You Win
+        self.win_label = Label(
+            text="You Win!",
+            font_size="72sp",
+            color=(0, 1, 0, 1),  # สีเขียว
+            size_hint=(None, None),
+            pos_hint={"center_x": 0.5, "center_y": 0.6},
+            opacity=0,
+        )
+        self.layout.add_widget(self.win_label)
+
         # Restart button
         self.restart_button = Button(text="Restart", size_hint=(None, None))
         self.restart_button.bind(on_release=self.show_game_over)
@@ -289,6 +311,17 @@ class SoccerJuggleGame(Screen):
         self.restart_button.disabled = True
         self.game_over_label.opacity = 0
 
+        # รีเซ็ตการตั้งค่าเมื่อเริ่มเกมใหม่
+        self.current_ball_image_index = 0
+        self.ball.source = self.ball_images[0]
+        self.win_label.opacity = 0
+
+        # เรียกใช้เมธอดเดิม
+        super().start_game(player_image_path)
+
+        # กำหนด game loop กลับมา
+        Clock.schedule_interval(self.update, 1 / 60.0)
+
     def start_playing(self):
         self.game_state = "PLAYING"
 
@@ -299,6 +332,10 @@ class SoccerJuggleGame(Screen):
         self.manager.current = "game_over"
 
     def update(self, dt):
+        # เพิ่มเงื่อนไขสำหรับสถานะ WIN
+        if self.game_state == "WIN":
+            return
+
         if self.game_state == "PLAYING":
             self.ball.y += self.ball_speed_y
             self.ball.x += self.ball_speed_x
@@ -357,6 +394,19 @@ class SoccerJuggleGame(Screen):
 
     def update_score(self):
         self.score_label.text = f"Score: {self.score}"
+
+        # ตรวจสอบและเปลี่ยนลูกฟุตบอล
+        if self.score == 10 or self.score == 20 or self.score == 30 or self.score == 40:
+            self.current_ball_image_index += 1
+            if self.current_ball_image_index < len(self.ball_images):
+                self.ball.source = self.ball_images[self.current_ball_image_index]
+
+        # แสดงข้อความ You Win เมื่อเดาะครบ 50 ครั้ง
+        if self.score == 50:
+            self.win_label.opacity = 1
+            self.game_state = "WIN"
+            # หยุดการเคลื่อนที่ของลูกฟุตบอล
+            Clock.unschedule(self.update)
 
     def on_touch_down(self, touch):
         if self.game_state == "WAITING":
@@ -472,6 +522,3 @@ class SoccerJuggleApp(App):
 # ------------ Main Entry Point ------------
 if __name__ == "__main__":
     SoccerJuggleApp().run()
-
-
-# "ในวันนี้ฉันได้ตรวจสอบและกำลังออกแบบระบบเกมเพิ่มเติม"

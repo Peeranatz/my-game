@@ -9,7 +9,6 @@ from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.core.audio import SoundLoader
 from random import randint
-
 from kivy.lang import Builder
 
 
@@ -75,6 +74,16 @@ class SoccerJuggleGame(Screen):
 
         self.add_widget(self.layout)
 
+        # List of ball images
+        self.ball_images = [
+            "images/balls/footballz.png",  # รูปลูกบอลเริ่มต้น
+            "images/balls/mudeng-re.png",  # รูปลูกบอลเมื่อ score >= 10
+            "images/balls/pigpig-re.png",  # รูปลูกบอลเมื่อ score >= 20
+            "images/balls/bowling-re.png",  # รูปลูกบอลเมื่อ score >= 30
+            "images/balls/mong_kut-re.png",  # รูปลูกบอลเมื่อ score >= 40
+            "images/balls/footgold.png",  # รูปลูกบอลเมื่อ score >= 50
+        ]
+
         # Initial update of positions
         self.on_window_resize(Window, Window.size)
 
@@ -84,6 +93,7 @@ class SoccerJuggleGame(Screen):
     def start_game(self, player_image_path):
         self.game_state = "WAITING"
         self.score = 0
+        self.ball.source = self.ball_images[0]  # รีเซ็ตรูปลูกบอลเป็นรูปเริ่มต้น
         self.ball.pos = (
             Window.width // 2 - self.ball.width // 2,
             Window.height // 2 - self.ball.height // 2,
@@ -119,8 +129,9 @@ class SoccerJuggleGame(Screen):
                 self.update_score()
 
                 # Update high score
-            if self.score > self.high_score:
-                self.high_score = self.score
+                if self.score > self.high_score:
+                    self.high_score = self.score
+
                 # Play hit sound
                 if self.hit_sound:
                     self.hit_sound.play()
@@ -129,6 +140,18 @@ class SoccerJuggleGame(Screen):
                 if self.score % 5 == 0:
                     self.ball_speed_y -= 0.5
                     self.gravity -= 0.05
+
+                # Change ball image when score reaches 10 or 20
+                if self.score == 10:
+                    self.ball.source = self.ball_images[1]
+                elif self.score == 20:
+                    self.ball.source = self.ball_images[2]
+                elif self.score == 30:
+                    self.ball.source = self.ball_images[3]
+                elif self.score == 40:
+                    self.ball.source = self.ball_images[4]
+                elif self.score == 50:
+                    self.ball.source = self.ball_images[5]
 
             # Ball falls off screen
             if self.ball.y < 0:
@@ -366,7 +389,6 @@ class GameOverScreen(Screen):
         layout = FloatLayout()
 
         # Background
-
         self.background = Image(
             source="images/backgrounds/gameover.jpg",
             size_hint=(1, 1),
@@ -429,14 +451,12 @@ class MainMenu(Screen):
 
 class SoccerJuggleApp(App):
     def build(self):
-
         Builder.load_file("game.kv")
         sm = ScreenManager()
         sm.add_widget(MainMenu(name="menu"))
         sm.add_widget(SelectPlayerScreen(name="select_player"))
         sm.add_widget(SoccerJuggleGame(name="game"))
         sm.add_widget(GameOverScreen(name="game_over"))
-
         return sm
 
 

@@ -25,15 +25,15 @@ class SoccerJuggleGame(Screen):
         Window.bind(size=self.on_window_resize)
 
         # Load sounds
-        self.hit_sound = SoundLoader.load("sound_bounce.mp3")
-        self.game_over_sound = SoundLoader.load("gameOver.mp3")
+        self.hit_sound = SoundLoader.load("sounds/sound_bounce.mp3")
+        self.game_over_sound = SoundLoader.load("sounds/gameOver.mp3")
 
         # Create layout
         self.layout = FloatLayout()
 
         # Background
         self.background = Image(
-            source="bk_stadium.jpg",
+            source="images/backgrounds/bk_stadium.jpg",
             size_hint=(1, 1),
             allow_stretch=True,
             keep_ratio=False,
@@ -41,11 +41,11 @@ class SoccerJuggleGame(Screen):
         self.layout.add_widget(self.background)
 
         # Ball properties (size relative to window height)
-        self.ball = Image(source="footballz.png", size_hint=(None, None))
+        self.ball = Image(source="images/balls/footballz.png", size_hint=(None, None))
         self.layout.add_widget(self.ball)
 
         # Shoe properties (size relative to window width)
-        self.shoe = Image(source="stusz.png", size_hint=(None, None))
+        self.shoe = Image(source="images/stuss/stusz.png", size_hint=(None, None))
         self.layout.add_widget(self.shoe)
 
         # Hitbox for the shoe
@@ -223,7 +223,7 @@ class SelectPlayerScreen(Screen):
 
         # Background
         self.background = Image(
-            source="selec_player_bk.jpg",
+            source="images/backgrounds/selec_player_bk.jpg",
             size_hint=(1, 1),
             allow_stretch=True,
             keep_ratio=False,
@@ -239,20 +239,40 @@ class SelectPlayerScreen(Screen):
         # Player data setup
         self.player_data = {
             0: {
-                "image": "Ronaldo-re.png",
+                "image": "images/players/Ronaldo-re.png",
                 "name": "Ronaldo",
-                "preview": "ronaldo-re.png",
+                "preview": "images/players/ronaldo-re.png",
             },
-            1: {"image": "Messi-re.png", "name": "Messi", "preview": "messi-re.png"},
-            2: {"image": "Mbape-re.png", "name": "Mbappe", "preview": "Mbape-re.png"},
+            1: {
+                "image": "images/players/Messi-re.png",
+                "name": "Messi",
+                "preview": "images/players/messi-re.png",
+            },
+            2: {
+                "image": "images/players/Mbape-re.png",
+                "name": "Mbappe",
+                "preview": "images/players/Mbape-re.png",
+            },
             3: {
-                "image": "Haaland-re.png",
+                "image": "images/players/Haaland-re.png",
                 "name": "Haaland",
-                "preview": "haaland-re.png",
+                "preview": "images/players/haaland-re.png",
             },
-            4: {"image": "Bruno-re.png", "name": "Bruno", "preview": "bruno-re.png"},
-            5: {"image": "Son-re.png", "name": "Son", "preview": "son-re.png"},
-            6: {"image": "Salah-re.png", "name": "Salah", "preview": "salah-re.png"},
+            4: {
+                "image": "images/players/Bruno-re.png",
+                "name": "Bruno",
+                "preview": "images/players/bruno-re.png",
+            },
+            5: {
+                "image": "images/players/Son-re.png",
+                "name": "Son",
+                "preview": "images/players/son-re.png",
+            },
+            6: {
+                "image": "images/players/Salah-re.png",
+                "name": "Salah",
+                "preview": "images/players/salah-re.png",
+            },
         }
 
         # Create containers for dynamic elements
@@ -348,7 +368,7 @@ class GameOverScreen(Screen):
         # Background
 
         self.background = Image(
-            source="gameover.jpg",
+            source="images/backgrounds/gameover.jpg",
             size_hint=(1, 1),
             allow_stretch=True,
             keep_ratio=False,

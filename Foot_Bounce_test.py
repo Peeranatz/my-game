@@ -361,6 +361,16 @@ class GameOverScreen(Screen):
         )
         layout.add_widget(self.results_label)
 
+        self.gameover_label = Label(
+            text="Game Over",
+            font_size="24sp",
+            color=(1, 0, 0, 1),
+            size_hint=(None, None),
+            pos=(Window.width / 2 - 50, Window.height / 1.5 + 100),
+            size=(100, 50),
+        )
+        layout.add_widget(self.gameover_label)
+
         # Restart button
         restart_button = Button(
             text="Restart",

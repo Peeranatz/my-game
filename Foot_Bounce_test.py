@@ -357,7 +357,7 @@ class GameOverScreen(Screen):
         self.results_label = Label(
             text="",
             font_size="24sp",
-            color=(1, 1, 1, 1),
+            color=(1, 0, 0, 1),
             size_hint=(None, None),
         )
         layout.add_widget(self.results_label)

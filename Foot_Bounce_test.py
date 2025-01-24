@@ -116,6 +116,9 @@ class SoccerJuggleGame(Screen):
                 self.score += 1
                 self.update_score()
 
+                # Update high score
+            if self.score > self.high_score:
+                self.high_score = self.score
                 # Play hit sound
                 if self.hit_sound:
                     self.hit_sound.play()
@@ -129,10 +132,6 @@ class SoccerJuggleGame(Screen):
             if self.ball.y < 0:
                 self.game_state = "GAME_OVER"
                 self.show_game_over()
-
-                # Update high score
-                if self.score > self.high_score:
-                    self.high_score = self.score
 
                 # Play game over sound
                 if self.game_over_sound:

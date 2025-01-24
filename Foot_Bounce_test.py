@@ -109,12 +109,6 @@ class SoccerJuggleGame(Screen):
     def start_playing(self):
         self.game_state = "PLAYING"
 
-    def show_game_over(self):
-        self.manager.get_screen("game_over").display_results(
-            self.score, self.high_score
-        )
-        self.manager.current = "game_over"
-
     def update(self, dt):
         if self.game_state == "PLAYING":
             self.ball.y += self.ball_speed_y
@@ -141,7 +135,7 @@ class SoccerJuggleGame(Screen):
                     self.ball_speed_y -= 0.5
                     self.gravity -= 0.05
 
-                # Change ball image when score reaches 10 or 20
+                # Change ball image when score reaches 10, 20, 30, 40, or 50
                 if self.score == 10:
                     self.ball.source = self.ball_images[1]
                 elif self.score == 20:
@@ -150,13 +144,20 @@ class SoccerJuggleGame(Screen):
                     self.ball.source = self.ball_images[3]
                 elif self.score == 40:
                     self.ball.source = self.ball_images[4]
-                elif self.score == 50:
+                elif self.score >= 50:
                     self.ball.source = self.ball_images[5]
 
             # Ball falls off screen
             if self.ball.y < 0:
                 self.game_state = "GAME_OVER"
-                self.show_game_over()
+
+                # Check if score is 50 or more to go to Game Win screen
+                if self.score >= 50:
+                    # ส่งคะแนนไปยังหน้า Game Win
+                    self.manager.get_screen("game_win").display_results(self.score)
+                    self.manager.current = "game_win"
+                else:
+                    self.show_game_over()
 
                 # Play game over sound
                 if self.game_over_sound:
@@ -168,6 +169,12 @@ class SoccerJuggleGame(Screen):
             # Ball bounces off walls
             if self.ball.x <= 0 or self.ball.x + self.ball.width >= Window.width:
                 self.ball_speed_x *= -1
+
+    def show_game_over(self):
+        self.manager.get_screen("game_over").display_results(
+            self.score, self.high_score
+        )
+        self.manager.current = "game_over"
 
     def check_collision(self):
         ball_bottom = self.ball.y
@@ -382,6 +389,61 @@ class SelectPlayerScreen(Screen):
         self.manager.current = "game"
 
 
+class GameWinScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        layout = FloatLayout()
+
+        # Background
+        self.background = Image(
+            source="images/backgrounds/bk_youwin.jpg",  # เปลี่ยนเป็นภาพพื้นหลังสำหรับหน้าชนะ
+            size_hint=(1, 1),
+            allow_stretch=True,
+            keep_ratio=False,
+        )
+        layout.add_widget(self.background)
+
+        # Win message
+        self.win_label = Label(
+            text="You Win!!!",
+            font_size="48sp",
+            color=(1, 1, 1, 1),
+            size_hint=(None, None),
+            pos_hint={"center_x": 0.5, "center_y": 0.7},
+        )
+        layout.add_widget(self.win_label)
+
+        # Score label
+        self.score_label = Label(
+            text="Score: 0",
+            font_size="36sp",
+            color=(1, 1, 1, 1),
+            size_hint=(None, None),
+            pos_hint={"center_x": 0.5, "center_y": 0.5},
+        )
+        layout.add_widget(self.score_label)
+
+        # Restart button
+        restart_button = Button(
+            text="Restart",
+            size_hint=(None, None),
+            size=(200, 50),
+            pos_hint={"center_x": 0.5, "center_y": 0.3},
+        )
+        restart_button.bind(on_release=self.restart_game)
+        layout.add_widget(restart_button)
+
+        self.add_widget(layout)
+
+    def display_results(self, score):
+        """อัปเดตข้อความคะแนนบนหน้า Game Win"""
+        self.score_label.text = f"Score: {score}"
+
+    def restart_game(self, instance):
+        """รีเซ็ตเกมและกลับไปที่หน้าเลือกผู้เล่น"""
+        self.manager.current = "select_player"
+
+
 class GameOverScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -457,6 +519,7 @@ class SoccerJuggleApp(App):
         sm.add_widget(SelectPlayerScreen(name="select_player"))
         sm.add_widget(SoccerJuggleGame(name="game"))
         sm.add_widget(GameOverScreen(name="game_over"))
+        sm.add_widget(GameWinScreen(name="game_win"))
         return sm
 
 

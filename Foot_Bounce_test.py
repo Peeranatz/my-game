@@ -10,6 +10,8 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.core.audio import SoundLoader
 from random import randint
 
+from kivy.lang import Builder
+
 
 class SoccerJuggleGame(Screen):
     def __init__(self, **kwargs):
@@ -344,6 +346,7 @@ class GameOverScreen(Screen):
         layout = FloatLayout()
 
         # Background
+
         self.background = Image(
             source="gameover.jpg",
             size_hint=(1, 1),
@@ -401,65 +404,19 @@ class GameOverScreen(Screen):
 
 
 class MainMenu(Screen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        layout = FloatLayout()
-
-        # Background
-        self.background = Image(
-            source="main_bk_football.jpg",
-            size_hint=(1, 1),
-            allow_stretch=True,
-            keep_ratio=False,
-        )
-        layout.add_widget(self.background)
-
-        # Title
-        title = Label(
-            text="Foot Bounce Game",
-            font_size="48sp",
-            size_hint=(None, None),
-            pos=(Window.width / 2 - 200, Window.height * 0.7),
-        )
-        layout.add_widget(title)
-
-        # Start Button
-        start_button = Button(
-            text="Start Game",
-            size_hint=(None, None),
-            size=(200, 50),
-            pos=(Window.width / 2 - 100, Window.height / 2 - 25),
-        )
-        start_button.bind(on_release=self.start_game)
-        layout.add_widget(start_button)
-
-        # Exit Button
-        exit_button = Button(
-            text="Exit",
-            size_hint=(None, None),
-            size=(200, 50),
-            pos=(Window.width / 2 - 100, Window.height / 2 - 100),
-        )
-        exit_button.bind(on_release=self.exit_game)
-        layout.add_widget(exit_button)
-
-        self.add_widget(layout)
-
-    def start_game(self, instance):
-        self.manager.current = "select_player"
-
-    def exit_game(self, instance):
-        App.get_running_app().stop()
+    pass
 
 
 class SoccerJuggleApp(App):
     def build(self):
+
+        Builder.load_file("game.kv")
         sm = ScreenManager()
         sm.add_widget(MainMenu(name="menu"))
         sm.add_widget(SelectPlayerScreen(name="select_player"))
         sm.add_widget(SoccerJuggleGame(name="game"))
         sm.add_widget(GameOverScreen(name="game_over"))
+
         return sm
 
 

@@ -1,0 +1,23 @@
+<MainMenu>:
+    FloatLayout:
+        canvas.before:
+            Rectangle:
+                source: "main_bk_football.jpg"
+                pos: self.pos
+                size: self.size
+
+        Button:
+            text: "Start Game"
+            font_size: 24
+            size_hint: 0.3, 0.1
+            pos_hint: {"center_x": 0.5, "center_y": 0.58}
+            on_release:
+                app.root.current = "select_player"
+
+        Button:
+            text: "Quit Game"
+            font_size: 24
+            size_hint: 0.3, 0.1
+            pos_hint: {"center_x": 0.5, "center_y": 0.4}
+            on_release:
+                app.stop()
